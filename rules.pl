@@ -1,5 +1,4 @@
-:- dynamic edge/3, edge/5, can/1.
-:- table interpolate/4.
+:- use_module(library(lists)).
 
 % Interpolation rules
 interpolate(A, B, C) :- findall(X, can(X), Ops), interpolate(A, B, C, Ops).
