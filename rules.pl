@@ -1,11 +1,11 @@
 :- use_module(library(lists)).
 
 % Interpolation rules
-interpolate(A, B, C) :- findall(X, can(X), Ops), interpolate(A, B, C, Ops).
-interpolate(A, B, [], _) :- can(A), can(B), can_follow(A, B).
-interpolate(A, B, [C|Cs], D) :- can(A), can_follow(A, C), select(C, D, E), interpolate(C, B, Cs, E).
+interpolation(A, B, C) :- findall(X, can(X), Ops), interpolation(A, B, C, Ops).
+interpolation(A, B, [], _) :- can(A), can(B), can_follow(A, B).
+interpolation(A, B, [C|Cs], D) :- can(A), can_follow(A, C), select(C, D, E), interpolation(C, B, Cs, E).
 %% convenience predicate that adds the beginning and end operations as well
-find_route(A, B, C) :- interpolate(A, B, D), append([A|D], [B], C).
+operations(A, B, C) :- interpolation(A, B, D), append([A|D], [B], C).
 
 % Liquid flow rules
 %% source
@@ -28,7 +28,7 @@ expand(move(Node1, Node2, Port1, Port2), Ops) :-
     (Op1 = source(Node1, Port1); Op1 = push(Node1, Port1)),
     (Op2 = sink(Node2, Port2); Op2 = pull(Node2, Port2)),
     can(Op1), can(Op2),
-    find_route(Op1, Op2, Ops),
+    operations(Op1, Op2, Ops),
     %% make sure there is at least one non-passive action
     active_seq(Ops).
 expand(move(Node1, Node2), C) :- expand(move(Node1, Node2, _, _), C).
@@ -36,7 +36,7 @@ expand(move(Node1, Node2), C) :- expand(move(Node1, Node2, _, _), C).
 % connect
 expand(connect(Node1, Node2), Ops) :-
     node(Op1, Node1), node(Op2, Node2),
-    (find_route(Op1, Op2, Ops); find_route(Op2, Op1, Ops)),
+    (operations(Op1, Op2, Ops); operations(Op2, Op1, Ops)),
     %% make sure ops can happen simultaneously
     queue_ops(Ops, seq([_])).
 
